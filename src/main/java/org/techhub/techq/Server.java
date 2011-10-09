@@ -18,5 +18,6 @@ public class Server {
 						Executors.newCachedThreadPool()));
 		bootstrap.setPipelineFactory(new ServerPipelineFactory());
 		bootstrap.bind(new InetSocketAddress(9999));
+		System.out.println("Server started. Browse http://localhost:9999/?script=hello%20world");
 	}
 }
