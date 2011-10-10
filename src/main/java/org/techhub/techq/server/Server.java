@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.server;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;

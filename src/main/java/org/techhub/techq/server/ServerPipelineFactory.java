@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.server;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;

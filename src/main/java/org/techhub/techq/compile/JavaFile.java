@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.compile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.tools.SimpleJavaFileObject;
+
+import org.techhub.techq.ClassUtil;
 
 public class JavaFile extends SimpleJavaFileObject {
 	

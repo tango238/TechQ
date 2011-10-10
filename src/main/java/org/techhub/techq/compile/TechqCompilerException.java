@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.compile;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;

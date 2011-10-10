@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.compile;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,6 +14,8 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
+
+import org.techhub.techq.ClassUtil;
 
 public class FileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
 	
