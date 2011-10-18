@@ -4,14 +4,19 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -30,27 +35,31 @@ import org.techhub.techq.WebAppUtil;
 import org.techhub.techq.compile.TechqCompiler;
 import org.techhub.techq.compile.TechqCompilerException;
 
+import com.sun.tools.javac.util.JCDiagnostic;
+
 public class ResponseHandler extends SimpleChannelUpstreamHandler {
 
 	private final TechqCompiler<Evaluatable> compiler = new TechqCompiler<Evaluatable>(
 			Arrays.asList(new String[] { "-target", "1.6" }));
 
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-			throws Exception {
-		HttpRequest req = (HttpRequest) e.getMessage();
-		// TODO GETは許可しない
-		if (!HttpMethod.POST.equals(req.getMethod())) {
-			// Error Response
-			// return;
-		}
-		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(
-				req.getUri());
-		Map<String, List<String>> params = queryStringDecoder.getParameters();
+	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+		// This app will execute this variable as Java language script. 
 		String script = null;
+		HttpRequest req = (HttpRequest) e.getMessage();
+		// 
+		if (HttpMethod.POST.equals(req.getMethod())) {
+			ChannelBuffer buffer = req.getContent();
+			String paramStr = new String(buffer.array());
+			Map<String, String> params = parseParameter(paramStr);
+			script = params.get("script");
+		}
+		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(req.getUri());
+		Map<String, List<String>> queries = queryStringDecoder.getParameters();
+		
 		String result = "";
-		if (!params.isEmpty()) {
-			for (Entry<String, List<String>> p : params.entrySet()) {
+		if (!queries.isEmpty()) {
+			for (Entry<String, List<String>> p : queries.entrySet()) {
 				String key = p.getKey();
 				if ("script".equals(key)) {
 					List<String> values = p.getValue();
@@ -60,36 +69,70 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 		}
+		HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 		if (script != null) {
 			// TODO Evaluates the script and converts to JSON format.
 			String source = "import org.techhub.techq.Evaluatable; public class Main implements Evaluatable { @Override public String eval() { return \""
 					+ script + "\"; } }";
+			System.out.println(source);
 			final DiagnosticCollector<JavaFileObject> errors = new DiagnosticCollector<JavaFileObject>();
 			Class<Evaluatable> compiledClass = null;
 			try {
 				compiledClass = compiler.compile("Main", source, errors,
 						new Class<?>[] { Evaluatable.class });
 			} catch (TechqCompilerException ex) {
-				DiagnosticCollector<JavaFileObject> diagnostics = ex
-						.getDiagnostics();
-				System.out.println(diagnostics);
+				DiagnosticCollector<JavaFileObject> diagnostics = ex.getDiagnostics();
+				for(Object diagnostic : diagnostics.getDiagnostics()){
+					JCDiagnostic jcDiagnostic = (JCDiagnostic) diagnostic;
+					result = jcDiagnostic.getMessage(Locale.JAPANESE);
+				}
 			}
 
 			if (compiledClass != null) {
 				Evaluatable evaluator = compiledClass.newInstance();
 				result = evaluator.eval();
 			}
+			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す
+			if(result.length() > 0){
+				HttpHeaders.setContentLength(res, result.length());
+				ChannelFuture future = e.getChannel().write(result);
+				future.addListener(ChannelFutureListener.CLOSE);
+				return;
+			}
 		}
-		HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+		
 		String uri = req.getUri();
 		if (uri != null && uri.endsWith(".html")) {
 			result = serveHtml(req.getUri());
+		} else {
+			result = serveHtml(WebAppUtil.WELCOME_PAGE); // welcome page
 		}
 		HttpHeaders.setContentLength(res, result.length());
 		ChannelFuture future = e.getChannel().write(result);
 		future.addListener(ChannelFutureListener.CLOSE);
 	}
 
+	/**
+	 * Parses POST parameter.
+	 * @param parameter
+	 * @return Map<String, String>
+	 */
+	protected Map<String, String> parseParameter(String paramStr){
+		HashMap<String, String> map = new HashMap<String, String>();
+		String[] params = paramStr.split("&");
+		for(String param : params){
+			String[] p = param.split("=");
+			if(p != null && p.length == 2){
+				try {
+					map.put(p[0], URLDecoder.decode(p[1], "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return map;
+	}
+	
 	protected String serveHtml(String uri) {
 		String webappDir = WebAppUtil.getWebAppRoot();
 		if (uri.startsWith("/")) {
@@ -128,7 +171,6 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 		}
-
 		return content.toString();
 	}
 }

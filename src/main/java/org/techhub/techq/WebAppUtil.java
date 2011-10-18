@@ -5,6 +5,9 @@ public class WebAppUtil {
 	/** webapp */
 	public static final String WEBAPP_DIR = "src/main/webapp/";
 	
+	/** Welcome Page */
+	public static final String WELCOME_PAGE = "/index.html";
+	
 	private WebAppUtil(){
 	}
 	

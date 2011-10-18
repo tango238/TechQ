@@ -19,7 +19,7 @@ public class Server {
 		}catch(Throwable t){
 			t.printStackTrace();
 		}
-		System.out.println("Server started. Browse http://localhost:9999/?script=hello%20world");
+		System.out.println("Server started. Browse http://localhost:9999/");
 	}
 	
 	public void init(){
