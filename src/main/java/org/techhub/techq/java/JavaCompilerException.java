@@ -1,9 +1,9 @@
-package org.techhub.techq.compile;
+package org.techhub.techq.java;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 
-public class TechqCompilerException extends Exception {
+public class JavaCompilerException extends Exception {
    
 	private static final long serialVersionUID = 1L;
    
@@ -11,7 +11,7 @@ public class TechqCompilerException extends Exception {
    
    transient private DiagnosticCollector<JavaFileObject> diagnostics;
 
-   public TechqCompilerException(String message,
+   public JavaCompilerException(String message,
          String qualifiedClassName, Throwable cause,
          DiagnosticCollector<JavaFileObject> diagnostics) {
       super(message, cause);
@@ -19,7 +19,7 @@ public class TechqCompilerException extends Exception {
       setDiagnostics(diagnostics);
    }
 
-   public TechqCompilerException(String message,
+   public JavaCompilerException(String message,
          String qualifiedClassName,
          DiagnosticCollector<JavaFileObject> diagnostics) {
       super(message);
@@ -27,7 +27,7 @@ public class TechqCompilerException extends Exception {
       setDiagnostics(diagnostics);
    }
 
-   public TechqCompilerException(String qualifiedClassName,
+   public JavaCompilerException(String qualifiedClassName,
          Throwable cause, DiagnosticCollector<JavaFileObject> diagnostics) {
       super(cause);
       this.className = qualifiedClassName;

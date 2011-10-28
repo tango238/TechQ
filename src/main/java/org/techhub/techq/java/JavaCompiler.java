@@ -1,11 +1,10 @@
-package org.techhub.techq.compile;
+package org.techhub.techq.java;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -13,22 +12,22 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 
-public class TechqCompiler<T> {
+public class JavaCompiler<T> {
 
 	public static final String JAVA_EXTENSION = ".java";
 
-	private final JavaCompiler compiler;
+	private final javax.tools.JavaCompiler compiler;
 	
 	private final List<String> options;
 	
-	private TechqClassLoader classLoader;
+	private JavaClassLoader classLoader;
 
 	private FileManagerImpl javaFileManager;
 
 	private DiagnosticCollector<JavaFileObject> diagnostics;
 
 
-	public TechqCompiler(Iterable<String> options) {
+	public JavaCompiler(Iterable<String> options) {
 		compiler = ToolProvider.getSystemJavaCompiler();
 		if (compiler == null) {
 			throw new IllegalStateException("Cannot find the Java compiler.");
@@ -47,7 +46,7 @@ public class TechqCompiler<T> {
 	public synchronized Class<T> compile(final String qualifiedClassName,
 			final CharSequence javaSource,
 			final DiagnosticCollector<JavaFileObject> diagnosticsList,
-			final Class<?>... types) throws TechqCompilerException,
+			final Class<?>... types) throws JavaCompilerException,
 			ClassCastException {
 		
 		if (diagnosticsList != null) {
@@ -56,7 +55,7 @@ public class TechqCompiler<T> {
 			diagnostics = new DiagnosticCollector<JavaFileObject>();
 		}
 		JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
-		classLoader = new TechqClassLoader();
+		classLoader = new JavaClassLoader();
 		javaFileManager = new FileManagerImpl(fileManager, classLoader);
 		
 		return compile(qualifiedClassName, javaSource, diagnosticsList);
@@ -65,7 +64,7 @@ public class TechqCompiler<T> {
 	public synchronized Class<T> compile(
 			final String qualifiedClassName, final CharSequence javaSource,
 			final DiagnosticCollector<JavaFileObject> diagnosticsList)
-			throws TechqCompilerException {
+			throws JavaCompilerException {
 
 		if (javaSource != null) {
 			String packageName = "";
@@ -84,16 +83,16 @@ public class TechqCompiler<T> {
 				diagnostics, options, null, Arrays.asList(new JavaFileObject[]{ source }));
 		final Boolean result = task.call();
 		if (result == null || !result.booleanValue()) {
-			throw new TechqCompilerException("Compilation failed.", qualifiedClassName, diagnostics);
+			throw new JavaCompilerException("Compilation failed.", qualifiedClassName, diagnostics);
 		}
 		try {
 			return loadClass(qualifiedClassName);
 		} catch (ClassNotFoundException e) {
-			 throw new TechqCompilerException(qualifiedClassName, e, diagnostics);
+			 throw new JavaCompilerException(qualifiedClassName, e, diagnostics);
 		} catch (IllegalArgumentException e) {
-			throw new TechqCompilerException(qualifiedClassName, e, diagnostics);
+			throw new JavaCompilerException(qualifiedClassName, e, diagnostics);
 		} catch (SecurityException e) {
-			throw new TechqCompilerException(qualifiedClassName, e, diagnostics);
+			throw new JavaCompilerException(qualifiedClassName, e, diagnostics);
 		}
 	}
 

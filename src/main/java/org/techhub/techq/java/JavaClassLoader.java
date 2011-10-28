@@ -1,4 +1,4 @@
-package org.techhub.techq.compile;
+package org.techhub.techq.java;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.tools.JavaFileObject;
 
 
-public class TechqClassLoader extends ClassLoader {
+public class JavaClassLoader extends ClassLoader {
 	
 	private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
 

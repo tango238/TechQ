@@ -1,4 +1,4 @@
-package org.techhub.techq.compile;
+package org.techhub.techq.java;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +16,7 @@ public class JavaFile extends SimpleJavaFileObject {
 	private final CharSequence source;
 
 	JavaFile(final String baseName, final CharSequence source) {
-		super(ClassUtil.toURI(baseName + TechqCompiler.JAVA_EXTENSION), Kind.SOURCE);
+		super(ClassUtil.toURI(baseName + JavaCompiler.JAVA_EXTENSION), Kind.SOURCE);
 		this.source = source;
 	}
 

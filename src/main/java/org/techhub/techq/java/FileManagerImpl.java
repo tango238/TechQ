@@ -1,4 +1,4 @@
-package org.techhub.techq.compile;
+package org.techhub.techq.java;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,11 +19,11 @@ import org.techhub.techq.ClassUtil;
 
 public class FileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
 	
-	private final TechqClassLoader classLoader;
+	private final JavaClassLoader classLoader;
 
 	private final Map<URI, JavaFileObject> fileObjects = new HashMap<URI, JavaFileObject>();
 
-	public FileManagerImpl(JavaFileManager fileManager, TechqClassLoader classLoader) {
+	public FileManagerImpl(JavaFileManager fileManager, JavaClassLoader classLoader) {
 		super(fileManager);
 		this.classLoader = classLoader;
 	}

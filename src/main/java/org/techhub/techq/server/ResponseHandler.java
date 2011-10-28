@@ -31,16 +31,18 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.techhub.techq.Evaluatable;
+import org.techhub.techq.EvaluationContainer;
 import org.techhub.techq.WebAppUtil;
-import org.techhub.techq.compile.TechqCompiler;
-import org.techhub.techq.compile.TechqCompilerException;
+import org.techhub.techq.java.JavaCompiler;
+import org.techhub.techq.java.JavaCompilerException;
+import org.techhub.techq.java.JavaEvaluationContainer;
+import org.techhub.techq.ruby.RubyEvaluationContainer;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 
 public class ResponseHandler extends SimpleChannelUpstreamHandler {
 
-	private final TechqCompiler<Evaluatable> compiler = new TechqCompiler<Evaluatable>(
-			Arrays.asList(new String[] { "-target", "1.6" }));
+	
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -69,29 +71,20 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 		}
+		
 		HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 		if (script != null) {
 			// TODO Evaluates the script and converts to JSON format.
-			String source = "import org.techhub.techq.Evaluatable; public class Main implements Evaluatable { @Override public String eval() { return \""
-					+ script + "\"; } }";
-			System.out.println(source);
-			final DiagnosticCollector<JavaFileObject> errors = new DiagnosticCollector<JavaFileObject>();
-			Class<Evaluatable> compiledClass = null;
-			try {
-				compiledClass = compiler.compile("Main", source, errors,
-						new Class<?>[] { Evaluatable.class });
-			} catch (TechqCompilerException ex) {
-				DiagnosticCollector<JavaFileObject> diagnostics = ex.getDiagnostics();
-				for(Object diagnostic : diagnostics.getDiagnostics()){
-					JCDiagnostic jcDiagnostic = (JCDiagnostic) diagnostic;
-					result = jcDiagnostic.getMessage(Locale.JAPANESE);
-				}
-			}
-
-			if (compiledClass != null) {
-				Evaluatable evaluator = compiledClass.newInstance();
-				result = evaluator.eval();
-			}
+			
+			// For Java evaluation.
+			// EvaluationContainer container = new JavaEvaluationContainer();
+			// result = container.runScript(script);
+			
+			// For Ruby evaluation.
+			EvaluationContainer container = new RubyEvaluationContainer();
+			result = container.runScript(script);
+			
+			
 			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す
 			if(result.length() > 0){
 				HttpHeaders.setContentLength(res, result.length());
