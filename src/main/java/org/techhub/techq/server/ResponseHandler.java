@@ -11,6 +11,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
@@ -30,8 +31,8 @@ import org.techhub.techq.util.WebAppUtil;
 
 public class ResponseHandler extends SimpleChannelUpstreamHandler {
 
+	private final EvaluationContainer container = new RubyEvaluationContainer();
 	
-
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
 		// This app will execute this variable as script. 
@@ -39,7 +40,10 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		String lang = null;
 		
 		HttpRequest req = (HttpRequest) e.getMessage();
-		System.out.println("req: "+req);
+		// TODO implements "Connectin: keep-alive"
+		boolean keepAlive = false; //HttpHeaders.isKeepAlive(req);
+		
+		//System.out.println("req: "+req);
 		// 
 		if (HttpMethod.POST.equals(req.getMethod())) {
 			ChannelBuffer buffer = req.getContent();
@@ -48,7 +52,6 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 			JsonParser parser = new JsonParser();
 			Question question = parser.parse(json);
 			script = question.inputString;
-			System.out.println(script);
 			lang = question.languageName;
 		}
 		
@@ -70,8 +73,10 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		// End.
 		
 		HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-		
+		res.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
 		String result = "";
+		
+		System.out.println("script:" + script);
 		if (script != null) {
 			// TODO Evaluates the script and converts to JSON format.
 			
@@ -80,28 +85,36 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 			// result = container.runScript(script);
 			
 			// For Ruby evaluation.
-			EvaluationContainer container = new RubyEvaluationContainer();
 			result = container.runScript(script);
 			
+			System.out.println("result: " + result);
 			
 			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す
 			if(result.length() > 0){
-				HttpHeaders.setContentLength(res, result.length());
+				if (keepAlive) {
+					HttpHeaders.setContentLength(res, result.length());
+				}
 				ChannelFuture future = e.getChannel().write(result);
-				future.addListener(ChannelFutureListener.CLOSE);
+				if (!keepAlive) {
+					future.addListener(ChannelFutureListener.CLOSE);
+				}
 				return;
 			}
 		}
 		
 		String uri = req.getUri();
-		if (uri != null && uri.endsWith(".html")) {
-			result = serveHtml(req.getUri());
+		if (uri != null && (uri.endsWith(".html") || uri.endsWith(".css") || uri.endsWith(".js"))) {
+			result = serveStaticFile(req.getUri());
 		} else {
-			result = serveHtml(WebAppUtil.WELCOME_PAGE); // welcome page
+			result = serveStaticFile(WebAppUtil.WELCOME_PAGE); // welcome page
 		}
-		HttpHeaders.setContentLength(res, result.length());
+		if (keepAlive) {
+			HttpHeaders.setContentLength(res, result.length());
+		}
 		ChannelFuture future = e.getChannel().write(result);
-		future.addListener(ChannelFutureListener.CLOSE);
+		if (!keepAlive) {
+			future.addListener(ChannelFutureListener.CLOSE);
+		}
 	}
 
 	/**
@@ -125,11 +138,18 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		return map;
 	}
 	
-	protected String serveHtml(String uri) {
+	protected String serveStaticFile(String uri) {
 		String webappDir = WebAppUtil.getWebAppRoot();
 		if (uri.startsWith("/")) {
 			uri = uri.substring(1);
 		}
 		return FileUtil.read(webappDir + uri);
 	}
+	
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+		e.getCause().printStackTrace();
+		e.getChannel().close();
+	}
+
 }

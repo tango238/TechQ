@@ -8,6 +8,8 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public class Server {
 
+	private int port;
+	
 	/**
 	 * @param args
 	 */
@@ -19,10 +21,10 @@ public class Server {
 		}catch(Throwable t){
 			t.printStackTrace();
 		}
-		System.out.println("Server started. Browse http://localhost:9999/");
 	}
 	
-	public void init(){
+	public synchronized void init(){
+		port = 9999;
 	}
 	
 	public void start(){
@@ -31,7 +33,9 @@ public class Server {
 						Executors.newCachedThreadPool(),
 						Executors.newCachedThreadPool()));
 		bootstrap.setPipelineFactory(new ServerPipelineFactory());
-		bootstrap.bind(new InetSocketAddress(9999));
+		bootstrap.bind(new InetSocketAddress(port));
+		
+		System.out.println("Server started. Browse http://localhost:" + port + "/");
 	}
 	
 }
