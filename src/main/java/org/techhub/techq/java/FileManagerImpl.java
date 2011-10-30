@@ -15,7 +15,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 
-import org.techhub.techq.ClassUtil;
+import org.techhub.techq.util.ClassUtil;
 
 public class FileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
 	

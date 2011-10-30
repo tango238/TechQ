@@ -7,7 +7,7 @@ import java.io.OutputStream;
 
 import javax.tools.SimpleJavaFileObject;
 
-import org.techhub.techq.ClassUtil;
+import org.techhub.techq.util.ClassUtil;
 
 public class JavaFile extends SimpleJavaFileObject {
 	

@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;

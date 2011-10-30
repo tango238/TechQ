@@ -1,4 +1,4 @@
-package org.techhub.techq;
+package org.techhub.techq.util;
 
 public class WebAppUtil {
 

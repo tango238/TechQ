@@ -1,8 +1,9 @@
-package org.techhub.techq;
+package org.techhub.techq.util;
 
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.techhub.techq.util.WebAppUtil;
 
 public class WebAppUtilTest {
 

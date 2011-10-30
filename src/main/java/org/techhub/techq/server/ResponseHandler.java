@@ -1,20 +1,11 @@
 package org.techhub.techq.server;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaFileObject;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelFuture;
@@ -30,15 +21,12 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
-import org.techhub.techq.Evaluatable;
 import org.techhub.techq.EvaluationContainer;
-import org.techhub.techq.WebAppUtil;
-import org.techhub.techq.java.JavaCompiler;
-import org.techhub.techq.java.JavaCompilerException;
-import org.techhub.techq.java.JavaEvaluationContainer;
+import org.techhub.techq.json.JsonParser;
+import org.techhub.techq.json.Question;
 import org.techhub.techq.ruby.RubyEvaluationContainer;
-
-import com.sun.tools.javac.util.JCDiagnostic;
+import org.techhub.techq.util.FileUtil;
+import org.techhub.techq.util.WebAppUtil;
 
 public class ResponseHandler extends SimpleChannelUpstreamHandler {
 
@@ -46,20 +34,28 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-		// This app will execute this variable as Java language script. 
+		// This app will execute this variable as script. 
 		String script = null;
+		String lang = null;
+		
 		HttpRequest req = (HttpRequest) e.getMessage();
+		System.out.println("req: "+req);
 		// 
 		if (HttpMethod.POST.equals(req.getMethod())) {
 			ChannelBuffer buffer = req.getContent();
-			String paramStr = new String(buffer.array());
-			Map<String, String> params = parseParameter(paramStr);
-			script = params.get("script");
+			String json = new String(buffer.array());
+			//Map<String, String> params = parseParameter(paramStr);
+			JsonParser parser = new JsonParser();
+			Question question = parser.parse(json);
+			script = question.inputString;
+			System.out.println(script);
+			lang = question.languageName;
 		}
-		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(req.getUri());
-		Map<String, List<String>> queries = queryStringDecoder.getParameters();
 		
-		String result = "";
+		// TODO Erase the code below later, and will add implementation of "deny" when the server receive GET parameters.
+		// From here
+		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(req.getUri());
+		Map<String, List<String>> queries = queryStringDecoder.getParameters();		
 		if (!queries.isEmpty()) {
 			for (Entry<String, List<String>> p : queries.entrySet()) {
 				String key = p.getKey();
@@ -71,8 +67,11 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 		}
+		// End.
 		
 		HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+		
+		String result = "";
 		if (script != null) {
 			// TODO Evaluates the script and converts to JSON format.
 			
@@ -131,39 +130,6 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		if (uri.startsWith("/")) {
 			uri = uri.substring(1);
 		}
-		// read file
-		FileReader fileReader = null;
-		BufferedReader reader = null;
-		StringBuilder content = new StringBuilder();
-		try {
-			fileReader = new FileReader(webappDir + uri);
-			reader = new BufferedReader(fileReader);
-
-			String read;
-			while ((read = reader.readLine()) != null) {
-				content.append(read);
-			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if(fileReader != null){
-				try {
-					fileReader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			if(reader != null){
-				try {
-					reader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return content.toString();
+		return FileUtil.read(webappDir + uri);
 	}
 }
