@@ -3,6 +3,11 @@ package org.techhub.techq.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class ClassUtil {
 
 	private ClassUtil(){

@@ -7,6 +7,11 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class ServerPipelineFactory implements ChannelPipelineFactory {
 
 	@Override

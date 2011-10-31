@@ -6,6 +6,11 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class JsonParser {
 	
 	public JsonParser() {

@@ -29,9 +29,12 @@ import org.techhub.techq.ruby.RubyEvaluationContainer;
 import org.techhub.techq.util.FileUtil;
 import org.techhub.techq.util.WebAppUtil;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class ResponseHandler extends SimpleChannelUpstreamHandler {
-
-	private final EvaluationContainer container = new RubyEvaluationContainer();
 	
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -40,15 +43,14 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		String lang = null;
 		
 		HttpRequest req = (HttpRequest) e.getMessage();
+//		System.out.println(req);
+		
 		// TODO implements "Connectin: keep-alive"
 		boolean keepAlive = false; //HttpHeaders.isKeepAlive(req);
 		
-		//System.out.println("req: "+req);
-		// 
 		if (HttpMethod.POST.equals(req.getMethod())) {
 			ChannelBuffer buffer = req.getContent();
 			String json = new String(buffer.array());
-			//Map<String, String> params = parseParameter(paramStr);
 			JsonParser parser = new JsonParser();
 			Question question = parser.parse(json);
 			script = question.inputString;
@@ -85,9 +87,8 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 			// result = container.runScript(script);
 			
 			// For Ruby evaluation.
+			EvaluationContainer container = new RubyEvaluationContainer();
 			result = container.runScript(script);
-			
-			System.out.println("result: " + result);
 			
 			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す
 			if(result.length() > 0){

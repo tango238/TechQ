@@ -9,7 +9,11 @@ import java.util.Map;
 
 import javax.tools.JavaFileObject;
 
-
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class JavaClassLoader extends ClassLoader {
 	
 	private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();

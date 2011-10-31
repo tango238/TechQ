@@ -17,6 +17,11 @@ import javax.tools.StandardLocation;
 
 import org.techhub.techq.util.ClassUtil;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class FileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
 	
 	private final JavaClassLoader classLoader;

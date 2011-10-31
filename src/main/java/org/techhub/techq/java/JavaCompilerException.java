@@ -3,6 +3,11 @@ package org.techhub.techq.java;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class JavaCompilerException extends Exception {
    
 	private static final long serialVersionUID = 1L;

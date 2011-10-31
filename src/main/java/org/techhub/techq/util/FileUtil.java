@@ -5,6 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class FileUtil {
 
 	public static String read(String path) {

@@ -11,6 +11,11 @@ import org.techhub.techq.EvaluationContainer;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class JavaEvaluationContainer implements EvaluationContainer {
 
 	private final JavaCompiler<Evaluatable> compiler = new JavaCompiler<Evaluatable>(

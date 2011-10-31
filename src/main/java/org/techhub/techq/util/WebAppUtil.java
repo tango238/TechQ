@@ -1,5 +1,10 @@
 package org.techhub.techq.util;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class WebAppUtil {
 
 	/** webapp */

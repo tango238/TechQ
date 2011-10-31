@@ -11,7 +11,11 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
-
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class JavaCompiler<T> {
 
 	public static final String JAVA_EXTENSION = ".java";

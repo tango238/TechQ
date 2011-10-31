@@ -9,6 +9,11 @@ import javax.tools.SimpleJavaFileObject;
 
 import org.techhub.techq.util.ClassUtil;
 
+/**
+ * 
+ * @author tango
+ * 
+ */
 public class JavaFile extends SimpleJavaFileObject {
 	
 	private ByteArrayOutputStream byteCode;
