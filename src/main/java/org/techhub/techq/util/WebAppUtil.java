@@ -1,5 +1,8 @@
 package org.techhub.techq.util;
 
+import java.io.File;
+
+
 /**
  * 
  * @author tango
@@ -7,17 +10,29 @@ package org.techhub.techq.util;
  */
 public class WebAppUtil {
 
-	/** webapp */
-	public static final String WEBAPP_DIR = "src/main/webapp/";
+	public static final String CONFIG;
 	
-	/** Welcome Page */
-	public static final String WELCOME_PAGE = "/TechQClient.html";
+	static {
+		CONFIG = new File("").getAbsolutePath() + "/webapp.properties";
+	}
+	
+	private static PropertiesLoader loader = new PropertiesLoader(CONFIG);
 	
 	private WebAppUtil(){
 	}
 	
+	public static boolean validate(){
+		if(getWebAppRoot() == null || getDefaultDocument() == null){
+			return false;
+		}
+		return true;
+	}
+	
 	public static String getWebAppRoot(){
-		String classPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
-		return classPath.replaceAll("target/[a-z¥-]*classes/", WEBAPP_DIR);
+		return loader.get("document.root");
+	}
+	
+	public static String getDefaultDocument(){
+		return loader.get("default.document");
 	}
 }

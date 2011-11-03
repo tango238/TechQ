@@ -11,6 +11,6 @@ public class FileUtilTest {
 	@Test
 	public void testRead() throws Exception {
 		String content = FileUtil.read("target/test-classes/aaa.txt");
-		assertThat(content, is("hoge"));
+		assertThat(content, is("hoge\n"));
 	}
 }

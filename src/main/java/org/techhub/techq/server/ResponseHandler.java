@@ -1,5 +1,9 @@
 package org.techhub.techq.server;
 
+import static org.jboss.netty.handler.codec.http.HttpHeaders.is100ContinueExpected;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -44,9 +48,9 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		
 		HttpRequest req = (HttpRequest) e.getMessage();
 //		System.out.println(req);
-		
-		// TODO implements "Connectin: keep-alive"
-		boolean keepAlive = false; //HttpHeaders.isKeepAlive(req);
+		if (is100ContinueExpected(req)) {
+			 send100Continue(e);
+		}
 		
 		if (HttpMethod.POST.equals(req.getMethod())) {
 			ChannelBuffer buffer = req.getContent();
@@ -78,7 +82,6 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		res.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
 		String result = "";
 		
-		System.out.println("script:" + script);
 		if (script != null) {
 			// TODO Evaluates the script and converts to JSON format.
 			
@@ -92,13 +95,9 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 			
 			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す
 			if(result.length() > 0){
-				if (keepAlive) {
-					HttpHeaders.setContentLength(res, result.length());
-				}
+				HttpHeaders.setContentLength(res, result.length());
 				ChannelFuture future = e.getChannel().write(result);
-				if (!keepAlive) {
-					future.addListener(ChannelFutureListener.CLOSE);
-				}
+				future.addListener(ChannelFutureListener.CLOSE);
 				return;
 			}
 		}
@@ -107,17 +106,17 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		if (uri != null && (uri.endsWith(".html") || uri.endsWith(".css") || uri.endsWith(".js"))) {
 			result = serveStaticFile(req.getUri());
 		} else {
-			result = serveStaticFile(WebAppUtil.WELCOME_PAGE); // welcome page
+			result = serveStaticFile(WebAppUtil.getDefaultDocument()); // welcome page
 		}
-		if (keepAlive) {
-			HttpHeaders.setContentLength(res, result.length());
-		}
+		HttpHeaders.setContentLength(res, result.length());
 		ChannelFuture future = e.getChannel().write(result);
-		if (!keepAlive) {
-			future.addListener(ChannelFutureListener.CLOSE);
-		}
+		future.addListener(ChannelFutureListener.CLOSE);
 	}
 
+	private void send100Continue(MessageEvent e) {
+		HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
+		e.getChannel().write(response);
+	}
 	/**
 	 * Parses POST parameter.
 	 * @param parameter
@@ -140,11 +139,11 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 	}
 	
 	protected String serveStaticFile(String uri) {
-		String webappDir = WebAppUtil.getWebAppRoot();
-		if (uri.startsWith("/")) {
-			uri = uri.substring(1);
+		StringBuilder webappDir = new StringBuilder(WebAppUtil.getWebAppRoot());
+		if(!webappDir.toString().endsWith("/")){
+			webappDir.append("/");
 		}
-		return FileUtil.read(webappDir + uri);
+		return FileUtil.read(webappDir.toString() + uri);
 	}
 	
 	@Override
