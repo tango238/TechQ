@@ -1,5 +1,14 @@
 package org.techhub.techq.java;
 
+import java.io.BufferedOutputStream;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -23,10 +32,9 @@ public class JavaEvaluationContainer implements EvaluationContainer {
 	
 	@Override
 	public String runScript(String script) {
-		String result = null;
+		String result = "";
 		
-		String source = "import org.techhub.techq.Evaluatable; public class Main implements Evaluatable { @Override public String eval() { return \""
-				+ script + "\"; } }";
+		String source = "import org.techhub.techq.Evaluatable; public class Main { public static void main() {" + script + " } }";
 		
 		final DiagnosticCollector<JavaFileObject> errors = new DiagnosticCollector<JavaFileObject>();
 		Class<Evaluatable> compiledClass = null;
@@ -42,15 +50,46 @@ public class JavaEvaluationContainer implements EvaluationContainer {
 		}
 
 		if (compiledClass != null) {
-			Evaluatable evaluator;
 			try {
-				evaluator = compiledClass.newInstance();
-				result = evaluator.eval();
+				StringWriter sw = new StringWriter();
+				System.setOut(new PrintStream(new PrintWriterStream(sw)));
+				Method method = compiledClass.getMethod("main");
+				method.invoke(null, new Object[]{});
+				sw.flush();
+				result = sw.toString();
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally{
+				FileOutputStream fdOut = new FileOutputStream(FileDescriptor.out);
+				System.setOut(new PrintStream(new BufferedOutputStream(fdOut, 128), true));
 			}
 		}
 		return result;
 	}
 
+}
+
+class PrintWriterStream extends OutputStream {
+	
+	private final Writer writer;
+	
+	public PrintWriterStream(Writer writer) {  
+        this.writer = writer;  
+    }  
+   
+    public void write(int b) throws IOException {  
+        write(new byte[] {(byte) b}, 0, 1);  
+    }  
+   
+    public void write(byte b[], int off, int len) throws IOException {  
+        writer.write(new String(b, off, len));  
+    }  
+   
+    public void flush() throws IOException {  
+        writer.flush();  
+    }  
+   
+    public void close() throws IOException {  
+        writer.close();  
+    }  
 }
