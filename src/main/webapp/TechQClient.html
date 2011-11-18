@@ -43,6 +43,60 @@
         in order for this application to display correctly.
       </div>
     </noscript>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+
+	google.load("visualization", "1", {'packages':['table']});
+
+	
+
+	var handleResponse=function(response){
+		var div=document.getElementById('res');
+	  	if(response.isError()) {
+	    	div.innerHTML = response.getDetailedMessage();
+	    	return;
+	  	}
+	
+	  	var data = response.getDataTable();
+	
+		
+		
+		responseHandler("START");
+		
+		startPos = 1;
+	  	
+	  	for (var row = startPos; row < data.getNumberOfRows(); row++) {
+	  		for (var col = 0; col < data.getNumberOfColumns(); col++) {
+	  			responseHandler("/Comment/	row is	"+row+"	/col	"+col+"/datas	"+data.getFormattedValue(row, col));
+	  			
+	  			//JSで文章をescape、GWT側に渡す（Base64のほうがいいかもねー。共通してるし。）
+	  			var json = "{"+
+	  				
+	  				"\"row\":"+row+","+
+	  				"\"col\":"+col+","+
+	  				"\"datas\":\""+escape(data.getFormattedValue(row, col))+"\""
+	  				
+	  				+"}";
+	  				
+	  			responseHandler("{\"Question\":"+json+"}"
+	  			);
+	  		}
+	  	}
+	  	responseHandler("OK");
+	}
+	
+	var reloadSpreadSheetData = function (path) {
+		init=function(){
+	    	var sourceSheet=path;
+	    	var query = new google.visualization.Query(sourceSheet);
+	    	query.send(handleResponse);
+		}
+	
+		google.setOnLoadCallback(init);
+	}
+	
+</script>
+
 
   </body>
 </html>
