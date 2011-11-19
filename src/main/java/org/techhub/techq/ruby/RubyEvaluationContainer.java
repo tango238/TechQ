@@ -2,6 +2,7 @@ package org.techhub.techq.ruby;
 
 import java.io.StringWriter;
 
+import org.jruby.embed.ParseFailedException;
 import org.jruby.embed.ScriptingContainer;
 import org.techhub.techq.EvaluationContainer;
 
@@ -24,6 +25,7 @@ public class RubyEvaluationContainer implements EvaluationContainer {
 		ruby = new ScriptingContainer();
 		writer = new StringWriter();
 		ruby.setWriter(writer);
+		ruby.setErrorWriter(writer);
 		initialized = true;
 	}
 	
@@ -35,10 +37,14 @@ public class RubyEvaluationContainer implements EvaluationContainer {
 				init();
 			}
 		}
-		ruby.runScriptlet(script);
-		writer.flush();
-		String sysout = writer.toString();
-		
+		String sysout = "";
+		try{
+			ruby.runScriptlet(script);
+			writer.flush();
+			sysout = writer.toString();
+		}catch(ParseFailedException e){
+			sysout = e.getMessage();
+		}
 		return sysout;
 	}
 
