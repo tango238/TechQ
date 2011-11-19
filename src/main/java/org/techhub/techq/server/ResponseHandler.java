@@ -29,6 +29,7 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.techhub.techq.EvaluationContainer;
 import org.techhub.techq.Lang;
 import org.techhub.techq.java.JavaEvaluationContainer;
+import org.techhub.techq.javascript.JavaScriptEvaluationContainer;
 import org.techhub.techq.json.JsonParser;
 import org.techhub.techq.json.Question;
 import org.techhub.techq.ruby.RubyEvaluationContainer;
@@ -88,12 +89,16 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 			// TODO Evaluates the script and converts to JSON format.
 			
 			if(Lang.LANG_JAVA.equals(lang)){
-				// For Java evaluation.
+				// For Java evaluation
 				EvaluationContainer container = new JavaEvaluationContainer();
 				result = container.runScript(script);
 			}else if(Lang.LANG_RUBY.equals(lang)){
-				// For Ruby evaluation.
+				// For Ruby evaluation
 				EvaluationContainer container = new RubyEvaluationContainer();
+				result = container.runScript(script);
+			}else if(Lang.LANG_JS.equals(lang)){
+				// For JavaScript evaluation
+				JavaScriptEvaluationContainer container = new JavaScriptEvaluationContainer();
 				result = container.runScript(script);
 			}
 			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す

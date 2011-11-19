@@ -21,7 +21,7 @@ public class RubyEvaluationContainer implements EvaluationContainer {
 	
 	private StringWriter writer;
 	
-	private synchronized void init(){
+	private void init(){
 		ruby = new ScriptingContainer();
 		writer = new StringWriter();
 		ruby.setWriter(writer);

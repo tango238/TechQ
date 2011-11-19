@@ -3,11 +3,8 @@ package org.techhub.techq.java;
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Locale;
@@ -17,6 +14,7 @@ import javax.tools.JavaFileObject;
 
 import org.techhub.techq.Evaluatable;
 import org.techhub.techq.EvaluationContainer;
+import org.techhub.techq.PrintWriterStream;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 
@@ -69,27 +67,3 @@ public class JavaEvaluationContainer implements EvaluationContainer {
 
 }
 
-class PrintWriterStream extends OutputStream {
-	
-	private final Writer writer;
-	
-	public PrintWriterStream(Writer writer) {  
-        this.writer = writer;  
-    }  
-   
-    public void write(int b) throws IOException {  
-        write(new byte[] {(byte) b}, 0, 1);  
-    }  
-   
-    public void write(byte b[], int off, int len) throws IOException {  
-        writer.write(new String(b, off, len));  
-    }  
-   
-    public void flush() throws IOException {  
-        writer.flush();  
-    }  
-   
-    public void close() throws IOException {  
-        writer.close();  
-    }  
-}
