@@ -43,6 +43,8 @@ import org.techhub.techq.util.WebAppUtil;
  */
 public class ResponseHandler extends SimpleChannelUpstreamHandler {
 	
+	private final static String signature = "TechQ; 1.0.0;";
+	
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
 		// This app will execute this variable as script. 
@@ -50,10 +52,9 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		String lang = null;
 		
 		HttpRequest req = (HttpRequest) e.getMessage();
-//		System.out.println(req);
-		if (is100ContinueExpected(req)) {
-			 send100Continue(e);
-		}
+//		if (is100ContinueExpected(req)) {
+//			send100Continue(e);
+//		}
 		
 		if (HttpMethod.POST.equals(req.getMethod())) {
 			ChannelBuffer buffer = req.getContent();
@@ -82,8 +83,9 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		// End.
 		
 		HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-		res.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
-		String result = "";
+		res.setHeader(HttpHeaders.Names.SERVER, signature);
+		res.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+		String result = "No Data.";
 		
 		if (script != null) {
 			// TODO Evaluates the script and converts to JSON format.
@@ -103,6 +105,7 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 			}
 			// スクリプトの実行結果もしくはエラー情報があればここでレスポンスをクライアントに返す
 			if(result.length() > 0){
+				result = result + "\n\n";
 				HttpHeaders.setContentLength(res, result.length());
 				ChannelFuture future = e.getChannel().write(result);
 				future.addListener(ChannelFutureListener.CLOSE);
@@ -121,10 +124,10 @@ public class ResponseHandler extends SimpleChannelUpstreamHandler {
 		future.addListener(ChannelFutureListener.CLOSE);
 	}
 
-	private void send100Continue(MessageEvent e) {
-		HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
-		e.getChannel().write(response);
-	}
+//	private void send100Continue(MessageEvent e) {
+//		HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
+//		e.getChannel().write(response);
+//	}
 	/**
 	 * Parses POST parameter.
 	 * @param parameter

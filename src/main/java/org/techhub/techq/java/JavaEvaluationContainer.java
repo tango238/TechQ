@@ -18,6 +18,7 @@ import org.techhub.techq.PrintWriterStream;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 
+
 /**
  * 
  * @author tango
@@ -32,7 +33,7 @@ public class JavaEvaluationContainer implements EvaluationContainer {
 	public String runScript(String script) {
 		String result = "";
 		
-		String source = "import org.techhub.techq.Evaluatable; public class Main { public static void main() {" + script + " } }";
+		String source = "import org.techhub.techq.Evaluatable; public class Main implements Evaluatable { public static void main() {" + script + " } }";
 		
 		final DiagnosticCollector<JavaFileObject> errors = new DiagnosticCollector<JavaFileObject>();
 		Class<Evaluatable> compiledClass = null;
